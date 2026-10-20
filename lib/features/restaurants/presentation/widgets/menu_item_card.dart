@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/utils/price_formatter.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/entities/menu_item.dart';
+import '../../../../core/widgets/app_image.dart';
 
 class MenuItemCard extends StatelessWidget {
   const MenuItemCard({super.key, required this.item, this.onAdd});
@@ -36,9 +38,10 @@ class MenuItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    formatPrice(item.price) ,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(color: scheme.primary),
+                    formatPrice(item.price),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: scheme.primary,
+                    ),
                   ),
                 ],
               ),
@@ -48,19 +51,11 @@ class MenuItemCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppSpacing.md),
-                  child: Image.network(
-                    item.imageUrl,
+                  child: AppImage(
+                    source: item.imageUrl,
                     width: 96,
                     height: 96,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => SizedBox(
-                      width: 96,
-                      height: 96,
-                      child: ColoredBox(
-                        color: scheme.surfaceContainerHighest,
-                        child: const Icon(Icons.fastfood),
-                      ),
-                    ),
+                    fallbackIcon: Icons.fastfood,
                   ),
                 ),
                 PositionedDirectional(

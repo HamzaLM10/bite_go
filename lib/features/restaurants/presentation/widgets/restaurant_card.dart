@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/entities/restaurant.dart';
+import '../../../../core/widgets/app_image.dart';
 
 class RestaurantCard extends StatelessWidget {
   const RestaurantCard({
@@ -35,14 +36,11 @@ class RestaurantCard extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Image.network(
-                    restaurant.imageUrl,
+                  child: AppImage(
+                    source: restaurant.imageUrl,
                     width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => ColoredBox(
-                      color: scheme.surfaceContainerHighest,
-                      child: const Icon(Icons.restaurant, size: 40),
-                    ),
+                    fallbackIcon: Icons.restaurant,
+                    fallbackIconSize: 40,
                   ),
                 ),
                 if (!restaurant.isOpen)
@@ -52,8 +50,9 @@ class RestaurantCard extends StatelessWidget {
                       child: Center(
                         child: Text(
                           'مغلق',
-                          style: theme.textTheme.titleLarge
-                              ?.copyWith(color: scheme.surface),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: scheme.surface,
+                          ),
                         ),
                       ),
                     ),
@@ -63,8 +62,9 @@ class RestaurantCard extends StatelessWidget {
                     top: AppSpacing.sm,
                     end: AppSpacing.sm,
                     child: IconButton(
-                      tooltip:
-                          isFavorite ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة',
+                      tooltip: isFavorite
+                          ? 'إزالة من المفضلة'
+                          : 'إضافة إلى المفضلة',
                       onPressed: onFavoriteToggle,
                       style: IconButton.styleFrom(
                         backgroundColor: scheme.surface.withValues(alpha: 0.85),

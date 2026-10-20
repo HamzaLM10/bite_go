@@ -13,7 +13,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../domain/entities/menu_item.dart';
-
+import '../../../../core/widgets/app_image.dart';
 import 'package:go_router/go_router.dart';
 
 /// توفّر الـ Cubit فقط. الرسم كله في _RestaurantDetailsView.
@@ -120,15 +120,11 @@ class _HeaderAppBar extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              restaurant.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => ColoredBox(
-                color: scheme.surfaceContainerHighest,
-                child: const Icon(Icons.restaurant, size: 48),
-              ),
-            ),
-            // تدرّج داكن أسفل الصورة ليبقى الاسم مقروءاً فوقها.
+            AppImage(
+              source: restaurant.imageUrl,
+              fallbackIcon: Icons.restaurant,
+              fallbackIconSize: 48,
+            ), // تدرّج داكن أسفل الصورة ليبقى الاسم مقروءاً فوقها.
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

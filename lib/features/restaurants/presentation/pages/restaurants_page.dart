@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/widgets/theme_toggle_button.dart';
+import '../../../auth/presentation/widgets/app_drawer.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
 import '../../../favorites/presentation/cubit/favorites_state.dart';
 import '../../domain/repositories/restaurant_repository.dart';
@@ -32,10 +32,10 @@ class _RestaurantsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Bite Go'),
         actions: [
-          const ThemeToggleButton(),
           IconButton(
             icon: const Icon(Icons.receipt_long_outlined),
             tooltip: 'طلباتي',
@@ -79,8 +79,7 @@ class _LoadedViewState extends State<_LoadedView> {
         const _SearchField(),
         _FiltersBar(
           favoritesOnly: _favoritesOnly,
-          onFavoritesChanged: (value) =>
-              setState(() => _favoritesOnly = value),
+          onFavoritesChanged: (value) => setState(() => _favoritesOnly = value),
         ),
         Expanded(
           child: BlocBuilder<RestaurantsBloc, RestaurantsState>(

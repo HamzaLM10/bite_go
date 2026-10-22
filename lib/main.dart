@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/router/app_router.dart';
+import 'core/router/stream_listenable.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
+import 'features/auth/data/repositories/fake_auth_repository.dart';
+import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
 import 'features/favorites/presentation/cubit/favorites_cubit.dart';
 import 'features/restaurants/data/repositories/fake_restaurant_repository.dart';
@@ -13,8 +17,37 @@ import 'features/tracking/domain/repositories/order_repository.dart';
 
 void main() => runApp(const BiteGoApp());
 
-class BiteGoApp extends StatelessWidget {
+class BiteGoApp extends StatefulWidget {
   const BiteGoApp({super.key});
+
+  @override
+  State<BiteGoApp> createState() => _BiteGoAppState();
+}
+
+class _BiteGoAppState extends State<BiteGoApp> {
+  // تُنشأ مرة واحدة هنا (وليس داخل build) لأن الـ router يعتمد على الـ Cubit.
+  late final AuthCubit _authCubit;
+  late final StreamListenable _authRefresh;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _authCubit = AuthCubit(FakeAuthRepository());
+    _authRefresh = StreamListenable(_authCubit.stream);
+    _router = createAppRouter(
+      authCubit: _authCubit,
+      refreshListenable: _authRefresh,
+    );
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    _authRefresh.dispose();
+    _authCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +62,7 @@ class BiteGoApp extends StatelessWidget {
       ],
       child: MultiBlocProvider(
         providers: [
+          BlocProvider.value(value: _authCubit),
           BlocProvider(create: (_) => CartCubit()),
           BlocProvider(create: (_) => ThemeCubit()),
           BlocProvider(create: (_) => FavoritesCubit()),
@@ -40,7 +74,7 @@ class BiteGoApp extends StatelessWidget {
               theme: AppTheme.light,
               darkTheme: AppTheme.dark,
               themeMode: mode,
-              routerConfig: appRouter,
+              routerConfig: _router,
             );
           },
         ),

@@ -19,6 +19,8 @@ dependencies:
   latlong2: ^0.10.1
   stream_transform: ^2.1.2
   bloc: ^9.2.1
+  hydrated_bloc: ^11.0.0
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:

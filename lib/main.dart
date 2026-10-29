@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'core/router/app_router.dart';
 import 'core/router/stream_listenable.dart';
@@ -15,7 +18,18 @@ import 'features/restaurants/domain/repositories/restaurant_repository.dart';
 import 'features/tracking/data/repositories/fake_order_repository.dart';
 import 'features/tracking/domain/repositories/order_repository.dart';
 
-void main() => runApp(const BiteGoApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // يجب تجهيز التخزين قبل إنشاء أي HydratedCubit (أي قبل runApp).
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory(
+            (await getApplicationDocumentsDirectory()).path,
+          ),
+  );
+  runApp(const BiteGoApp());
+}
 
 class BiteGoApp extends StatefulWidget {
   const BiteGoApp({super.key});

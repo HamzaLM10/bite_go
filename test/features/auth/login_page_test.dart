@@ -5,6 +5,7 @@ import 'package:bite_go/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bite_go/features/auth/presentation/widgets/auth_header.dart';
 
 void main() {
   late AuthCubit cubit;
@@ -14,10 +15,16 @@ void main() {
     addTearDown(cubit.close);
   });
 
-  Future<void> pumpPage(WidgetTester tester) async {
+  Future<void> pumpPage(WidgetTester tester, {bool reduceMotion = true}) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
+
+    // "تقليل الحركة": العناصر تظهر فوراً والدراجة لا تدور، فيستقر
+    // pumpAndSettle (دراجة Lottie المتكررة لا تستقر أبداً).
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        FakeAccessibilityFeatures(disableAnimations: reduceMotion);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
     await tester.pumpWidget(
       BlocProvider.value(
@@ -39,8 +46,40 @@ void main() {
     expect(find.text('المتابعة كضيف'), findsOneWidget);
   });
 
-  testWidgets('الحقول الفارغة تُظهر رسائل التحقق ولا تُرسل شيئاً',
-      (tester) async {
+  testWidgets(
+    'الترويسة تتقلص ثم تظهر الحقول بالتتابع: البريد قبل كلمة المرور',
+    (tester) async {
+      await pumpPage(tester, reduceMotion: false);
+
+      double opacityOf(Finder field) => tester
+          .widget<FadeTransition>(
+            find
+                .ancestor(of: field, matching: find.byType(FadeTransition))
+                .first,
+          )
+          .opacity
+          .value;
+
+      // البداية تطابق الـ Splash: الترويسة تملأ الشاشة (1600) والحقول مخفية.
+      expect(tester.getSize(find.byType(AuthHeader)).height, 1600);
+      expect(opacityOf(emailField), 0);
+      expect(opacityOf(passwordField), 0);
+
+      // عند 1200ms: بدأ البريد (من 1090ms) ولم تبدأ كلمة المرور (من 1310ms).
+      await tester.pump(const Duration(milliseconds: 1200));
+      expect(opacityOf(emailField), greaterThan(0));
+      expect(opacityOf(passwordField), 0);
+
+      // بعد انتهاء الحركة (2670ms): الترويسة بحجمها النهائي والحقول كاملة.
+      await tester.pump(const Duration(seconds: 3));
+      expect(tester.getSize(find.byType(AuthHeader)).height, lessThan(600));
+      expect(opacityOf(emailField), closeTo(1, 0.001));
+      expect(opacityOf(passwordField), closeTo(1, 0.001));
+    },
+  );
+  testWidgets('الحقول الفارغة تُظهر رسائل التحقق ولا تُرسل شيئاً', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     await tester.tap(loginButton);
@@ -51,8 +90,9 @@ void main() {
     expect(cubit.state, const AuthUnauthenticated());
   });
 
-  testWidgets('بريد غير صالح يعرض رسالة الخطأ من الـ Repository',
-      (tester) async {
+  testWidgets('بريد غير صالح يعرض رسالة الخطأ من الـ Repository', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     await tester.enterText(emailField, 'bad');

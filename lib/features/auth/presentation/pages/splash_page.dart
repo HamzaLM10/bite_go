@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/scooter_animation.dart';
+import '../widgets/auth_brand.dart';
 
-const _logoDiameter = 120.0;
-const _logoIconSize = 72.0;
-const _animationDuration = Duration(milliseconds: 1400);
-const _holdAfterAnimation = Duration(milliseconds: 1500);
+const _animationDuration = Duration(milliseconds: 2200);
+const _holdAfterAnimation = Duration(milliseconds: 1200);
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -20,8 +20,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _logoScale;
-  late final Animation<double> _logoFade;
+  late final Animation<double> _drive;
   late final Animation<double> _textFade;
   late final Animation<Offset> _textSlide;
 
@@ -30,22 +29,16 @@ class _SplashPageState extends State<SplashPage>
     super.initState();
     _controller = AnimationController(vsync: this, duration: _animationDuration);
 
-    // الشعار: أول 60% من الوقت (يكبر مع ارتداد خفيف ويظهر تدريجياً).
-    _logoScale = Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.6, curve: Curves.easeOutBack),
-      ),
-    );
-    _logoFade = CurvedAnimation(
+    // الدراجة: أول 55% من الوقت، تدخل بسرعة ثم تبطئ حتى تقف (easeOutCubic).
+    _drive = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0, 0.4, curve: Curves.easeIn),
+      curve: const Interval(0, 0.55, curve: Curves.easeOutCubic),
     );
 
-    // النص: من 50% إلى 100% (يظهر ويصعد قليلاً من الأسفل).
+    // النص: من 55% إلى 100% (يظهر ويصعد قليلاً من الأسفل).
     final textCurve = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.5, 1, curve: Curves.easeOut),
+      curve: const Interval(0.55, 1, curve: Curves.easeOut),
     );
     _textFade = textCurve;
     _textSlide = Tween<Offset>(
@@ -71,7 +64,10 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final scooterWidth = splashScooterWidth(screenWidth);
+    // المسافة التي تجعل الدراجة خارج الشاشة تماماً من اليمين عند البداية.
+    final startDx = screenWidth / 2 + scooterWidth / 2 + AppSpacing.md;
 
     return Scaffold(
       backgroundColor: AppColors.primary,
@@ -79,46 +75,24 @@ class _SplashPageState extends State<SplashPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FadeTransition(
-              opacity: _logoFade,
-              child: ScaleTransition(
-                scale: _logoScale,
-                child: Container(
-                  width: _logoDiameter,
-                  height: _logoDiameter,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.delivery_dining,
-                    size: _logoIconSize,
-                    color: AppColors.primary,
-                  ),
-                ),
+            AnimatedBuilder(
+              animation: _drive,
+              builder: (context, child) => Transform.translate(
+                offset: Offset((1 - _drive.value) * startDx, 0),
+                child: child,
               ),
+              child: ScooterAnimation(width: scooterWidth),
             ),
             const SizedBox(height: AppSpacing.lg),
             FadeTransition(
               opacity: _textFade,
               child: SlideTransition(
                 position: _textSlide,
-                child: Column(
+                child: const Column(
                   children: [
-                    Text(
-                      'Bite Go',
-                      style: textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'طعامك المفضل يصلك أسرع',
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
+                    AuthBrandTitle(),
+                    SizedBox(height: AppSpacing.sm),
+                    AuthBrandTagline(),
                   ],
                 ),
               ),

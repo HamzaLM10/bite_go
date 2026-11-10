@@ -21,6 +21,7 @@ dependencies:
   bloc: ^9.2.1
   hydrated_bloc: ^11.0.0
   path_provider: ^2.1.6
+  lottie: ^3.8.2
 
 dev_dependencies:
   flutter_test:
@@ -32,6 +33,7 @@ flutter:
   assets:
     - assets/images/restaurants/
     - assets/images/menu/
+    - assets/animations/
 
   fonts:
     - family: Cairo

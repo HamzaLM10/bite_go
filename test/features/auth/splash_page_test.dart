@@ -5,8 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('الشاشة الترحيبية تظهر ثم تنتقل للقائمة بعد انتهاء الأنيميشن',
-      (tester) async {
+  testWidgets('الشاشة الترحيبية تظهر ثم تنتقل للقائمة بعد انتهاء الأنيميشن', (
+    tester,
+  ) async {
     final router = GoRouter(
       initialLocation: AppRoutes.splash,
       routes: [
@@ -26,11 +27,13 @@ void main() {
     expect(find.text('Bite Go'), findsOneWidget);
     expect(find.text('home'), findsNothing);
 
-    // ينتهي الأنيميشن (1400ms) فيُسجَّل مؤقّت الانتظار (500ms).
+    // ينتهي الأنيميشن (2200ms) فيُسجَّل مؤقّت الانتظار (1200ms).
+    await tester.pump(const Duration(seconds: 3));
+    // نمرّر وقت المؤقّت صراحةً: pumpAndSettle لا ينتظر Timer، ولا يستقر
+    // أصلاً ما دامت دراجة Lottie المتكررة على الشاشة.
     await tester.pump(const Duration(seconds: 2));
-    // نمرّر وقت المؤقّت صراحةً لأن pumpAndSettle لا ينتظر Timer.
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pumpAndSettle();
+    // ننتظر انتقال الصفحة ثم تختفي الدراجة مع الشاشة القديمة.
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('home'), findsOneWidget);
   });

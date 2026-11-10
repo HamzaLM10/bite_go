@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:bite_go/features/auth/presentation/cubit/auth_cubit.dart';
@@ -53,7 +53,10 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginPage(),
+        pageBuilder: (context, state) => NoTransitionPage<void>(
+          key: state.pageKey,
+          child: const LoginPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.restaurants,
@@ -61,9 +64,8 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.restaurantDetails,
-        builder: (context, state) => RestaurantDetailsPage(
-          restaurantId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            RestaurantDetailsPage(restaurantId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.cart,
@@ -79,9 +81,8 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.tracking,
-        builder: (context, state) => TrackingPage(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            TrackingPage(orderId: state.pathParameters['id']!),
       ),
     ],
   );
